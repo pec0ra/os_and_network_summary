@@ -1,4 +1,4 @@
-#OS & Network
+#OS & Network Summary
 ##Table of Content
 [TOC]
 
@@ -148,7 +148,7 @@ How the signals represent bits
 * <a name="nrz_acronym2" href="#nrz_acronym1">NRZ</a> : A high voltage +V represents a 1 and a low voltage -V represents a 0
 
 #####Clock recovery
-Receiver needs frequent signal transitions to decode bits (syncronisation)
+Receiver needs frequent signal transitions to decode bits (synchronisation)
 ######4b/5b
 * Map every data bits into 5 code bits without long runs of zeros
 
@@ -197,6 +197,100 @@ Engineer SNR for data rate
 
 **Wireless :**
 Adapt data rate to SNR (can't design for worst case)
+
+
+
+
+##Chapter 3 : Link Layer
+Concerns how to transfer messages (frames, of limited size) over one or more connected links
+
+###Framing
+Transform stream of bits from physical layer to sequence of frames
+#####Byte count
+* Start each frame with a length field
+* Difficult tu resynchronize after framing error
+
+#####Byte stuffing
+* Use a flag byte value for start/end of frame
+* Escape the flag (and the escape code) inside the message replacing (stuffing) it with an escape code
+
+#####Bit stuffing
+* Flag with six consecutive 1
+* In the message, insert a 0 after five 1 when sending and remove every 0 after five 1 when receiving
+* Slightly less overhead than byte stuffing but more complicated -> byte stuffing used in practice
+
+###Error coding
+
+#####Using error codes
+Codeword consists of data bits D plus check bits R
+
+![error_code.png](./img/error_code.png)
+
+#####Hamming distance
+* The distance is the number of bit flips needed to change $$$D+R_1$$$ to $$$D+R_2$$$
+* The Hamming distance of a code is the minimum distance between a pair of codewords
+* For a code of Hamming distance d+1, up to d errors will always be detected
+* For a code of Hamming distance 2d + 1, up to d errors can always be corrected by mapping to the closest codeword
+
+#####Error Detection
+* Parity bit : The parity bit is the sum of the bits of D (distance : 2 -> detect 1 error)
+* Checksum : Sum up data in N-bit word (Stronger than parity)
+
+**Internet Checksum :**
+Sending :
+1. Arrange data in 16-bit words
+2. Add
+3. Add any carryover back to get 16 bits
+4. Negate (complement) to get the checksum
+
+Receiving :
+1. Arrange data in 16-bit words (including checksum)
+2. Add
+3. Add any carryover back to get 16 bits
+4. Negate the result and check if 0
+
+Example :
+```
+1.	  0001
+   	 f203
+   	 f4f5
+2.	+ f6f7
+	  ------
+	   2ddf0
+```
+```
+  	  ddf0
+3.	+    2
+	  ------
+        ddf2
+
+4. -> 220d
+```
+Transmit to physical layer : 0001 f203 f4f5 f6f7 220d
+
+
+```
+1.	  0001
+   	 f203
+   	 f4f5
+	    f6f7
+2.	+ 220d
+	  ------
+	   2rffd
+```
+```
+  	  fff0
+3.	+    2
+	  ------
+        ffff
+
+4. -> 0000
+```
+
+* Distance of the code : 2
+* Will always detect up to 1 error
+* Will detect all burst errors up to 16
+* For random errors, probability of miss is $$$\frac{1}{2^{16}}$$$ ($$$2^{16}$$$ different checksums)
 
 ##Acronyms
 Acronym | Meaning | Description
