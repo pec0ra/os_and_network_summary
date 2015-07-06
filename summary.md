@@ -392,6 +392,8 @@ Network word for the sharing of a resource
 
 
 ####Multiple Access Control or Medium Access Control (<a name="acronym_mac1" href="#acronym_mac2">MAC</a>)
+
+####Random Multiple Access
 Basis for classic Ethernet
 
 #####ALOHA protocol
@@ -423,6 +425,111 @@ Estimates the probability for CSMA persistence
 3rd collision : wait 0-7 time frames
 ...
 
+#####Ethernet
+* Multiple access with 1-persistent CSMA/CD with BEB (Modern ethernet based on switches)
+* Has two addresses for destination and source, CRC-32 for error detection (no ARQ)
+* Physical layer preamble to identify start of frame
+
+![ethernet.png](./img/ethernet.png)
+
+####WIreless Multiple Access
+* Nodes share a single link
+* Nodes can't carrier sense (different areas of coverage)
+* Nodes can't hear while sending (can't collision detect)
+
+=> WiFi can't use CSMA/CD
+
+**Different Coverage Areas**
+Signal is bradcast and received nearby where SNR is sufficient
+
+![wifi1.png](./img/wifi1.png)
+
+**Hidden terminals**
+A and C are hidden terminals : Can't hear each other but can collide at B
+
+![wifi2.png](./img/wifi2.png)
+
+**Exposed terminals**
+B and C can hear each other but don't collide at A and D
+
+![wifi3.png](./img/wifi3.png)
+
+#####Multiple Access with Collision Avoidance (<a name="acronym_maca1" href="#acronym_maca2">MACA</a>)
+
+Use short handshake instead of CSMA :
+1. Senter node transmits a <a name="acronym_rts1" href="#acronym_rts2">RTS</a> with frame length
+2. Receiver node replies with a <a name="acronym_cts1" href="#acronym_cts2">CTS</a> with frame length
+3. Sender transmits the frame while other nodes hearing the CTS remain silent
+
+Collision are possible but less likely
+
+#####802.11
+* Clients get connectivity from an Access Point (AP)
+* O<a href="#acronym_fdm2">FDM</a> modulation
+* Different amplitudes/phases for varying SNRs
+* Multiple access uses CSMA/CA; RTS/CTS optional
+* ARQ
+* Three addresses (due to AP)
+* Errors detected with a CRC-32
+* Many other features (encryption, power save)
+
+![802.11.png](./img/802.11.png)
+
+**802.11 CSMA/CA :**
+Sender avoids collision by inserting a small random gap (backoff) before sending
+
+![csmaca.png](./img/csmaca.png)
+
+####Contention-Free Multiple Access
+CSMA is not good enough under high load
+
+#####Turn-taking Multiple Access Protocols
+Define an order in which nodes get a chance to send (or bypass if no traffic)
+Can be ordered with a token ring (queue)
+* Fixed overhead
+* Predictable service
+* More complex
+* Higher overhead at low load
+
+
+####LAN Switches
+Link <=> Link
+To replace Multiple Access
+Uses addresses to connect input port to the right output port
+
+![switch.png](./img/switch.png)
+
+It uses buffers to connect multiple inputs to one outputs (queue)
+
+#####Switch forwarding
+To find the right output port, the switch must know the addresses.
+It creates a port address table as follows :
+1. To fill the table, it looks at the source address of input frames
+2. To forward, it sends to the port, or if not known, it broadcasts to all ports
+
+**Forwarding loops :**
+Switches collectively find a spanning tree to avoid loops. They then forward as normal but only on the spanning tree.
+
+Rules :
+* All switches run the same algorithm
+* They start with no information
+* Operate in parallel and send messages
+* Always search for the best solution
+
+Outline :
+1. Elect root node of the tree (switch with lowest address)
+2. Grow tree as shortest distance from the root (use lowest address to break distance ties)
+3. Turn off ports if they are not on the spanning tree
+
+In practice :
+1. Each switch initially believes it is the root
+2. Each switch sends periodic updates to neighbours with its address, address of root and distance to root
+
+
+
+
+##Chapter 4 : Network layer
+
 
 
 ##Acronyms
@@ -438,8 +545,12 @@ Wan | Wide Area Network | Large ISP
 <a name="acronym_ldpc2" href="#acronym_ldpc1">LDPC</a> | Low Density Parity Check | State of the art today to correct errors in messages
 <a name="acronym_arq2" href="#acronym_arq1">ARQ</a> | Automatic Repeat reQuest |
 <a name="acronym_tdm2" href="#acronym_tdm1">TDM</a> | Time Division Multiplexing |
-<a name="acronym_fdm2" href="#acronym_fdm1">TDM</a> | Frequency Division Multiplexing |
+<a name="acronym_fdm2" href="#acronym_fdm1">FDM</a> | Frequency Division Multiplexing |
 <a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control | 
 <a name="acronym_csma2" href="#acronym_csma1">CSMA</a> | Carrier Sense Multiple Access |
 <a name="acronym_csmacd2" href="#acronym_csmacd1">CSMA/CD</a> | Carrier Sense Multiple Access with Collision Detection |
 <a name="acronym_beb2" href="#acronym_beb1">BEB</a> | Binary Exponential Backoff |
+<a name="acronym_maca2" href="#acronym_maca1">MACA</a> | Multiple Access with Collision Avoidance |
+<a name="acronym_rts2" href="#acronym_rts1">RTS</a> | Request To Send |
+<a name="acronym_cts2" href="#acronym_cts1">CTS</a> | Clear To Send |
+AP | Access Point | See 802.11
