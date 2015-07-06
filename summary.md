@@ -530,6 +530,213 @@ In practice :
 
 ##Chapter 4 : Network layer
 
+Builds on the link layer.
+Routers send packets over multiple networks
+
+Because switches :
+* don't scale to large networks
+* don't work across more than one link technology (WiFi, Ethernet,...)
+* don't give much traffic control (plan routes / bandwidth)
+
+Network layer :
+* Scaling (hierarchy in the form of prefixes)
+* Heterogeneity (IP for internetworking)
+* Bandwidth control (lowest cost routing, Quality of Service QOS)
+
+###Routing and Forwarding
+**Routing** is the process of deciding in which direction to send traffic (network wide / global)
+**Forwarding** is the process of sending a packet on its way (local)
+
+###Datagram vs Virtual Circuit
+####Store and forward
+Both models are implemented with store and forward packet switching :
+* Router receive a complete packet, stores it temporarily if necessary before forwarding it onwards
+
+
+####Datagram or connectionless service
+* Packets contain a destination address
+* Each router uses it to forward each packet, possibly on different paths
+* Each router has a forwarding table keyed by address. It gives the next hop for each destination address and may change.
+
+
+####Virtual Circuit Model
+
+Three phases :
+1. Connection establishment (path chosen, circuit info stored in routers)
+2. Data transfer (packets are forwarded along the path)
+3. Connection teardown (circuit info removed from routers)
+
+* Packets only contain a short label to identify the circuit.
+* Labels don't have a global meaning, they are only unique for a link
+* Each router has a forwarding table keyed by circuit (gives output line and next label to place on packet)
+
+#####Multi-Protocol Label Switching <a href="#acronym_mpls2" name="acronym_mpls1">MPLS</a>
+
+A virtual-circuit like technology widely used by ISPs
+* ISP sets up circuits inside their backbone ahead of time
+* ISP adds MPLS label to IP packet at ingress, undoes at egress
+
+![mpls.png](./img/mpls.png)
+
+####Advantages / Disadvantages
+Issue | Datagrams | Virtual Circuits
+:--- | :--- | :---
+Setup phase | **Not needed** | Required
+Router State | **Per destination** | Per connection
+Addresses | Packet carries full address | **Packet carries short label**
+Routing | Per packet | **Per circuit**
+Failures | **Easier to mask** | Difficult to mask
+Quality of Service | Difficult to add | **Easier to add**
+
+
+
+###Internetworking
+
+How networks may differ :
+* Service model (datagrams, VC)
+* Addressing
+* QOS (priorities / no priorities)
+* Packet sizes
+* Security
+
+###IP (Internet Protocol)
+Network layer of the Internet
+
+![IP.png](./img/IP.png)
+
+####IP Addresses
+IPv4 uses 32-bit addresses written in dotted quad notation
+
+aaaaaaaa . bbbbbbbb . cccccccc . dddddddd
+
+#####IP prefixes
+* Address are allocated in blocks called prefixes
+* Addresses in an L-bit prefix have the same top L bits
+* There are $$$2^{32-L}$$$ addresses with the same L-bit prefix
+* Written "IP address/length"
+Ex : 128.13.0.0/16 refers to addresses 128.13.0.0 to 128.13.255.255
+* A /24 is 256 addresses, a /32 is one address
+
+
+
+####Routing and Forwarding
+**Routing** is the process of deciding in which direction to send traffic (network wide / global)
+**Forwarding** is the process of sending a packet on its way (local)
+
+####IP Forwarding
+* IP addresses on one network belong to the same prefix
+* Node uses a table that lists the next hop for IP prefixes
+
+![ip_forwarding.png](./img/ip_forwarding.png)
+
+Longest matching prefix forwarding rule :
+* Find the longest prefix that contains the destination address (the most specific)
+* Forward the packet to the next hop router for that prefix
+
+#####Host/Router distinction
+In the internet :
+* Router do the routing, know which way to all destination
+* Host send remote traffic (out of prefix to nearest router)
+
+Host forwarding table :
+
+prefix | Next Hop
+:-- | :--
+My network prefix | Send directly to that IP
+0.0.0.0/0 | Send to my router
+
+####Helping IP with ARP, DHCP
+* DHCP : getting an IP address
+* ARP Mapping IP to link addresses
+
+#####DHCP
+Uses UDP on ports 67 and 68
+
+When a new nodes "wakes up" on a network :
+* Node sends broadcast (address all 1s) message that delivered to all nodes on the network.
+* DHCP server leases an IP address and sends other infos (network prefix, address of local router, DNS server, time server,...)
+
+To renew an existing lease : REQUEST followed by ACK
+
+![dhcp.png](./img/dhcp.png)
+
+#####ARP protocol
+
+The node needs the link layer addresse to send a frame over the local link (it only has its IP address)
+
+![arp.png](./img/arp.png)
+
+To do this, it just asks (broadcast) the node with target IP to identify itself
+
+
+####Packet size problem
+* Different networks have different maximum packet sizes or <a name="acronym_mtu1" href="#acronym_mtu2">MTU</a>
+* Prefer large packets for efficiency
+
+#####IPv4 Fragmentation
+Routers fragment packets that are too large to forward
+Receiving host reassembles to reduce load on routers
+
+
+![fragmentation.png](./img/fragmentation.png)
+
+* Gives more work for routers / hosts
+* Magnifies packet loss
+* Security vulnerabilities
+
+#####Path MTU Discovery
+Discover the max MTU that will fit :
+Host test with large packet. If too large, routers tell host what size would have fit
+
+Set DF (Don't Fragment) bit in IP header to get feedback messages from router
+
+
+####Internet Control Message Protocol <a name="acronym_icmp1" href="#acronym_icmp2">ICMP</a>
+
+* To find the problem when something goes wrong during forwarding.
+* Sits on top of IP
+* Provides error report and testing (function that hosts can use)
+
+When router encounters an error while forwarding :
+* It sends an ICMP error report to IP source address
+* It discards the problematic packet
+
+#####ICMP message format
+Contains a Type, Code and Checksum
+Carried in an IP packet
+
+![icmp.png](./img/icmp.png)
+
+
+#####Traceroute
+IP header contains TTL (Time To Live) field
+It Decrements every router hop with ICMP error when it hits zero (protects against forwarding loops)
+
+
+####IPv6
+
+* Large addresses (128 bits)
+* New notation : 8 groups of 4 hex digits (16 bits)
+ex : 2001:0db8:0000:0000:0000:ff00:0042:8329 
+
+![ipv6.png](./img/ipv6.png)
+
+Approaches proposed for transition to IPv6 :
+* Dual stack (speak IPv4 and IPv6)
+* Translators
+* **Tunnels** (carry IPv6 over IPv4)
+
+
+####Network Address Translation <a name="acronym_nat1" href="#acronym_nat2">NAT</a>
+
+Connects an internal network to an external network
+Middlebox that translates addresses (public/private)
+
+* It keeps an internal / external table (IP address + TCP port)
+* Needs ports to make mapping (there are fewer external IPs)
+* For new translations : it creates an external name when host makes a TCP connection
+* Look up and rewrite IP/port
+
 
 
 ##Acronyms
@@ -554,3 +761,14 @@ Wan | Wide Area Network | Large ISP
 <a name="acronym_rts2" href="#acronym_rts1">RTS</a> | Request To Send |
 <a name="acronym_cts2" href="#acronym_cts1">CTS</a> | Clear To Send |
 AP | Access Point | See 802.11
+<a href="#acronym_mpls1" name="acronym_mpls2">MPLS</a> | Multi-Protocol Label Switching |
+VC | Virtual Circuit |
+TTL | Time To Live |
+QOS | Quality Of Service |
+IANA | Internet Assigned Numbers Authority | Allocates public IP addresses (delegates to regional RIRs)
+ARP | Address Resolution Protocol |
+DHCP | Dynamic Host Configuration Protocol |
+<a name="acronym_mtu2" href="#acronym_mtu1">MTU</a> | Maximum Transmission Unit |
+MF | More Fragments | Bit in IP header, 1 if more fragments are following
+<a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
+<a name="acronym_nat2" href="#acronym_nat1">NAT</a> | Network Address Translation |
