@@ -221,7 +221,7 @@ Transform stream of bits from physical layer to sequence of frames
 
 ###Error coding
 
-#####Using error codes
+####Using error codes
 Codeword consists of data bits D plus check bits R
 
 ![error_code.png](./img/error_code.png)
@@ -232,11 +232,17 @@ Codeword consists of data bits D plus check bits R
 * For a code of Hamming distance d+1, up to d errors will always be detected
 * For a code of Hamming distance 2d + 1, up to d errors can always be corrected by mapping to the closest codeword
 
-#####Error Detection
-* Parity bit : The parity bit is the sum of the bits of D (distance : 2 -> detect 1 error)
+####Error Detection
+* Parity bit : The parity bit is the sum of the bits of D (distance : 2 -> detect 1 error); Little used
 * Checksum : Sum up data in N-bit word (Stronger than parity)
+* Internet Checksum
+* <a href="#acronym_crc1">CRC</a>
 
-**Internet Checksum :**
+**In practice :**
+* CRCs used on links (Ethernet, 802.11, ADSL, Cable)
+* Checksum used in Internet (IP, TCP, UDP)
+
+#####Internet Checksum
 Sending :
 1. Arrange data in 16-bit words
 2. Add
@@ -292,6 +298,133 @@ Transmit to physical layer : 0001 f203 f4f5 f6f7 220d
 * Will detect all burst errors up to 16
 * For random errors, probability of miss is $$$\frac{1}{2^{16}}$$$ ($$$2^{16}$$$ different checksums)
 
+#####<a name="acronym_crc1" href="#acronym_crc2">Cyclic redundancy check</a>
+
+For data D of length n, generate check bits R of length k such that the n+k bits are evenly divisible by a generator C.
+
+* Protection depend on generator (standard has 32bits C)
+* Humming distance of 4
+* Detects odd numbers of errors
+* Detects bursts of up to k bits in error
+* Not vulnerable to systematic errors
+
+**Example :**
+D = 302, C = 3, k (length of R) = 1
+=> R = 1 because $$$\frac{3021}{3} = 0$$$
+
+**Send procedure :**
+1. Extend D with k zeros
+2. Divide by the generator C
+3. Ignore quotient
+4. Set check bits R as the remainder
+
+**Receive procedure :**
+1. Divide by C and check for zero remainder
+
+**Example :**
+D = 10111
+C = 100
+k = length(C) - 1 = 2
+
+```
+101 | 1011100
+      101
+      ---
+       001
+       000
+       ---
+        011
+        000
+        ---
+         110
+         101
+         ---
+           10 = R
+```
+Transmitted frame : 1011110
+
+####Error correction
+It is difficult because errors can be in the check bits
+
+#####Hamming code
+Gives a method for constructing a code with a distance of 3.
+
+**To encode :**
+* With k check bits, we can check data of length $$$n = 2^k - k - 1$$$; ex: $$$k=3$$$, $$$n=4$$$
+* The check bits are in positions $$$p_i$$$ that are powers of 2, starting with position 1 (1, 2, 4, 8...)
+* Fill the free positions with the data bits (positions 3, 5, 6, 7...)
+* Check bit in position $$$p_i$$$ is the parity of the bits at positions $$$p_j$$$ for which the $$$i^{th}$$$ bit in $$$j$$$ is 1 (ex: $$$p_2$$$ is the sum of all the bits at positions $$$p_j$$$ where the second bit in $$$j$$$ is 1 => 10 (2), 11 (3), 110 (6), 111 (7), 1010 (10), ...)
+
+**To decode :**
+* Recompute check bits $$$p_i$$$ (with parity sum including the check bit)
+* Arrange as a binary number ($$$\dots p_8p_4p_2p_1$$$)
+* If the value (syndrome) is zero, it means there is no error
+* Otherwise the syndrome is the position of the error, flip the bit at this position
+
+#####Detection vs Correction
+**Correction**
+* When error are expected and in small number
+* When no time for retransmission
+* Used in physical layer (<a name="acronym_ldpc1" href="#acronym_ldpc2">LDPC</a>)
+* Sometimes used in the application layer
+
+**Detection**
+* When errors are not expected
+* When errors are generally large
+* Used in the link layer and above
+
+###Retransmissions (<a name="acronym_arq1" href="#acronym_arq2">ARQ</a>)
+* Receiver automatically acknowledges correct frames with an ACK
+* Sender automatically resends after a timeout if no ACK is received
+* Frames and ACKs must carry sequence numbers to avoid duplicates
+
+#####Stop and wait
+Use one bit to distinguish the current frame from the next one. Send one frame at a time
+
+#####Sliding Window
+Generalization of stop-and-wait
+Allows W frames to be outstanding
+
+###Multiplexing
+Network word for the sharing of a resource
+* <a name="acronym_tdm1" href="#acronym_tdm2">Time Division Multiplexing</a> : Users take turns on a fixed schedule (ex : Round-Robin)
+* <a name="acronym_fdm1" href="#acronym_fdm2">Frequency Division Multiplexing</a> : Put different users on different frequency bands
+
+
+####Multiple Access Control or Medium Access Control (<a name="acronym_mac1" href="#acronym_mac2">MAC</a>)
+Basis for classic Ethernet
+
+#####ALOHA protocol
+* Node sends when it has traffic
+* If there was a collision (no ACK received), wait a random amount of time and resend
+* Works well only under low load
+
+#####Carrier Sense Multiple Access(<a name="acronym_csma1" href="#acronym_csma2">CSMA</a>)
+* Improve ALOHA by listening for activity before sending
+* Collision can still occur because of delays
+
+#####Carrier Sense Multiple Access with Collision Detection(<a name="acronym_csmacd1" href="#acronym_csmacd2">CSMA/CD</a>)
+* Reduce the cost of collision by detecting them and aborting (jam) the rest of the frame
+
+For a wire of max length (time) D, we impose a minimum frame size that lasts for 2D seconds. This way everyone who collides knows that it happened. A node can't finish before a collision
+
+#####CSMA persistence
+To avoid collision between nodes who queued up waiting for the current sender to finish
+For N queued senders, each one sends with next with probability $$$\frac{1}{N}$$$
+
+#####Binary Exponential Backoff (<a name="acronym_beb1" href="#acronym_beb1">BEB</a>)
+Estimates the probability for CSMA persistence
+
+* Double interval for each successive collision
+* Quickly gets large enough to work and very efficient in practice
+
+1st collision : wait 0-1 time frames
+2nd collision : wait 0-3 time frames
+3rd collision : wait 0-7 time frames
+...
+
+
+
 ##Acronyms
 Acronym | Meaning | Description
 :------ | :------ | :----------
@@ -301,3 +434,12 @@ Man | Metropolitan Area Network | ex : Cable, DSL
 Wan | Wide Area Network | Large ISP
 <a name="nrz_acronym1" href="#nrz_acronym2">NRZ</a> | Non Return to Zero |
 <a name="snr_acronym2" href="snr_acronym1">SNR</a> | Signal to Noise Ratio | S/N
+<a name="acronym_crc2" href="#acronym_crc1">CRC</a> | Cyclic redundancy check |
+<a name="acronym_ldpc2" href="#acronym_ldpc1">LDPC</a> | Low Density Parity Check | State of the art today to correct errors in messages
+<a name="acronym_arq2" href="#acronym_arq1">ARQ</a> | Automatic Repeat reQuest |
+<a name="acronym_tdm2" href="#acronym_tdm1">TDM</a> | Time Division Multiplexing |
+<a name="acronym_fdm2" href="#acronym_fdm1">TDM</a> | Frequency Division Multiplexing |
+<a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control | 
+<a name="acronym_csma2" href="#acronym_csma1">CSMA</a> | Carrier Sense Multiple Access |
+<a name="acronym_csmacd2" href="#acronym_csmacd1">CSMA/CD</a> | Carrier Sense Multiple Access with Collision Detection |
+<a name="acronym_beb2" href="#acronym_beb1">BEB</a> | Binary Exponential Backoff |
