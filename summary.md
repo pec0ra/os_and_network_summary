@@ -29,7 +29,7 @@ To divide up network functionality
 
 Protocol stack example :
 
-![Protocol stack.png](./img/protocol_stack.png)
+![protocol_stack.png](./img/protocol_stack.png)
 
 **Encapsulation : ** Lower layer wraps higher layer content and add its own information
 
