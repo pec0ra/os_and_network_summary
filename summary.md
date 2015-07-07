@@ -1070,6 +1070,78 @@ TCP Timeout = $$$SRTT_N + 4\cdot SVAR_N$$$
 
 ##Chapter 6 : Congestion Control
 
+* Congestion is a "traffic jam" in the network
+* Happens when the buffering queues from routers/switches overflow (when input > output)
+
+![congestion.png](./img/congestion.png)
+
+We want to operate the network just before the onset of congestion
+
+###Bandwidth allocation
+
+* Efficient : most capacity is used but there is no congestion
+* Fair : every sender gets a reasonable share of the network
+* We can't have both
+
+
+* Network layer witnesses congestion : it can provide feedback
+* Transport layer causes congestion : it can reduce offered load
+
+####Max-Min fairness
+Max-min fair allocation is one that :
+* Increasing the rate of one flow will decrease the rate of a smaller flow
+* When a flow is bottlenecked (at some place in the network), hold it fixed and continue increasing other flows
+* This maximizes the minimum flow
+
+####Bandwidth allocation models
+
+* Open loop versus closed loop (open : reserve bandwidth before use, closed : use feedback to adjust rates)
+* Host versus Network support (Who sets/enforces allocations ?)
+* Window versus Rate based (How is allocation expressed ?)
+
+TCP is Closed loop, host-driven, window-based:
+* Network layer returns feedback on current allocation to senders
+* Transport layer adjusts sender's behavior via window in response (control law)
+
+#####Additive Increase Multiplicative Decrease (AIMD)
+AIMD is a control law hosts can use to reach a good allocation.
+Used by TCP.
+
+* Hosts additively increase rate while network is not congested
+* Hosts multiplicatively decrease rate when congestion occurs
+
+![aimd.png](./img/aimd.png)
+
+* Produces a "sawtooth" pattern over time for rate of each host
+* Converges to an allocation that is efficient and fair (other don't)
+* Requires only binary feedback from the network
+
+Feedback signals :
+* **Packet loss**
+* Packet delay
+* Router indication
+
+#####TCP Tahoe/Reno
+Fix timeouts and introduce a congestion window over the sliding window to limit queues/loss
+
+####TCP ACK clocking
+The self-clocking behavior of sliding windows
+* Each in-order ACK advances the sliding window and lets a new segment enter the networks. ACKs clock data segments
+* Segments are buffered and spread out on slow link
+
+####TCP slow start
+* It is a component of the AI in AIMD
+* We want to quickly near the right rate but it varies grately
+* Start by doubling the the window size every RTT (exponential growth)
+* Next time, switch to AI just before congestion rate
+
+Implementation (TCP Tahoe) :
+* Initial slow-start phase (double every RTT)
+* Later Additive Increase phase (Increment every RTT)
+* Switching threshold initially $$$\infty$$$, $$$\frac{cwnd}{2}$$$ after loss
+
+
+
 
 
 
@@ -1083,6 +1155,7 @@ TCP Timeout = $$$SRTT_N + 4\cdot SVAR_N$$$
 ##Acronyms
 Acronym | Meaning | Description
 :------ | :------ | :----------
+AIMD | Additive Increase Multiplicative Decrease |
 AP | Access Point | See 802.11
 ARP | Address Resolution Protocol |
 <a name="acronym_arq2" href="#acronym_arq1">ARQ</a> | Automatic Repeat reQuest |
@@ -1092,6 +1165,7 @@ BGP | Border Gateway Protocol | Protocol to compute interdomain routes in the In
 <a name="acronym_csma2" href="#acronym_csma1">CSMA</a> | Carrier Sense Multiple Access |
 <a name="acronym_csmacd2" href="#acronym_csmacd1">CSMA/CD</a> | Carrier Sense Multiple Access with Collision Detection |
 <a name="acronym_cts2" href="#acronym_cts1">CTS</a> | Clear To Send |
+cwnd | Congestion Window |
 DHCP | Dynamic Host Configuration Protocol |
 DV | Distance Vector (protocol) |
 ECMP | Equal-Cost Multi-Path routing | Shortest paths with more than one path
