@@ -619,10 +619,6 @@ Ex : 128.13.0.0/16 refers to addresses 128.13.0.0 to 128.13.255.255
 
 
 
-####Routing and Forwarding
-**Routing** is the process of deciding in which direction to send traffic (network wide / global)
-**Forwarding** is the process of sending a packet on its way (local)
-
 ####IP Forwarding
 * IP addresses on one network belong to the same prefix
 * Node uses a table that lists the next hop for IP prefixes
@@ -644,6 +640,12 @@ prefix | Next Hop
 :-- | :--
 My network prefix | Send directly to that IP
 0.0.0.0/0 | Send to my router
+
+##### Hierarchical routing
+* IP prefix (from one host)
+* Region (ex: ISP network)
+* Route first to the region, then to the IP prefix within the region
+* Hide details within a region from outside of the region
 
 ####Helping IP with ARP, DHCP
 * DHCP : getting an IP address
@@ -737,6 +739,172 @@ Middlebox that translates addresses (public/private)
 * For new translations : it creates an external name when host makes a TCP connection
 * Look up and rewrite IP/port
 
+###Routing
+
+* Routing has a better method than the spanning tree. It uses all links to find the "best" path
+* It allocates network bandwidth adapting to failures
+
+Properties we want :
+
+Property | Meaning
+:-- | :--
+Correctness | Find paths that work
+Efficient paths | Uses network bandwidth well
+Fair paths | Doesn't starve any node
+Fast convergence | Recovers quickly after changes
+Scalability | Works well as network grows large
+
+
+Rules of algorithms :
+* All nodes are alike (no controller)
+* Nodes only know what they learn by exchanging messages with neighbours
+* Nodes operate concurrently
+* May be node/link/message failures
+
+####Shortest path routing
+
+"Best" path :
+* Latency (avoid circuitous paths)
+* Bandwidth (avoid small pipes)
+* Money (avoid expensive links)
+* Hops (reduce switching)
+
+**Optimality property** : Subpaths of shortest paths are also shortest paths
+**Sink trees** : The sink tree for are destination is the union of all shortest paths towards the destination (similarly source tree)
+
+Forwarding table at a node : Lists next hop for each destination
+
+#####Dijkstra's algorithm
+
+Set distance from source to 0 for source and $$$\infty$$$ for all other nodes
+While tentative node remain :
+1. Extract N, a node with lowest distance
+2. Add link to N to the shortest path tree
+3. Relax the distances of neighbours of N by lowering any better distance estimate
+
+
+#####Distance vector routing
+* To compute shortest paths in a distributed network
+* Used in ARPANET and RIP (Routing Information Protocol)
+* Two main approaches :
+    - Distributed version of Bellman-Ford (very slow convergence after failures)
+    - Link-state algorithms (used in practice)
+
+Settings :
+* Nodes know only the cost to their neighbours, not the topology
+* Nodes can talk only to their neighbours using messages
+* All nodes run the same algorithm concurrently
+* Nodes and links may fail, messages may be lost
+
+Algorithm :
+Each node maintains a vector of distances (and next hops) to all destinations
+1. Initialize vector with 0 cost to self, $$$\infty$$$ to other destinations
+2. Periodically send vector to neighbours
+3. Update vector for each destination by selecting the shortest distance heard, after adding cost of neighbour link
+
+Use the best neighbour for forwarding
+
+**Dynamics :**
+Adding route : News travels one hop per exchange
+Removing routes : When a node fails, no more exchanges, other nodes forget
+Partitions (unreachable nodes in divided network) : Problem -> count to infinity scenario (The node don't tell neighbours how near it is and other nodes just tell each other a length which increases every time.)
+
+
+#####Flooding
+Broadcast a message to all nodes in the network
+
+1. Send an incoming message on to all other neighbours
+2. Remember the message so that it is only sent once over each link (duplicate suppression)
+
+Use ARQ to make flooding reliable
+
+
+#####RIP (Routing Information Protocol)
+* DV protocol with hop count as metric (limits network size with $$$\infty$$$ at 16 hops)
+* Includes split horizon, poison reverse (Don't send route back to where you learned it from)
+* Runs on top of UDP
+* Send vectors every 30 secs (180 sec timeout to detect failures)
+
+
+
+#####Link-State Routing
+* Trades more computation than distance vector for better dynamics
+* Widely used in practice (Internet, ARPANET)
+
+
+Settings (same as DV) :
+* Nodes know only the cost to their neighbours, not the topology
+* Nodes can talk only to their neighbours using messages
+* All nodes run the same algorithm concurrently
+* Nodes and links may fail, messages may be lost
+
+Algorithm :
+1. Each node flood topology in the form of link state packets (LSP) -> Each node learns full topology
+2. Each node computes its own forwarding table by running Dijkstra
+
+Complications :
+* Seq number reaches max, or is corrupted
+* Node crashes and loses seq. number
+* Network partitions then heals
+
+Solution : Include age on LSPs and forget old information that is not refreshed
+
+#####DL vs LS
+Goal | Distance Vector | Link State
+:-- | :-- | :--
+Correctness| Distributed Bellman-Ford | Replicated Dijkstra
+Efficient paths| Approx with shortest paths | Approx. with shortest paths
+Fair paths| Approx. with shortest paths | Approx. with shortest paths
+Fast convergence| Slow - Many exchanges | **Fast - flood and compute**
+Stability| **Excellent - storage/compute** | Moderate - storage/compute
+
+#####IS-IS and OSPF protocols
+Widely used in large enterprises and ISP networks
+* IS-IS : Intermediate System to Intermediate System
+* OSPF : Open Shortest Path First
+
+Link state protocols with many features added
+
+
+#####Equal Cost Multi-Path (ECMP) routing
+* For paths with equal costs
+* Topology has them for redundancy
+* Extend shortest path model by keeping set if there are ties
+
+
+
+####Routing with multiple parties
+Structure of the internet :
+* Networks (ISP, CDNs, ...) group hosts as IP prefixes
+* Networks are richly interconnected (often using IXPs)
+
+Two problems :
+1. Scaling to very large networks (IP prefixes, hierarchy, prefix aggregation)
+2. Incorporating policy decision (Parties choose their routes to suit their own needs) => (Hot potato) routing
+
+#####Routing policies
+Transit :
+* One party (customer) gets transit service from another party (ISP)
+
+Peer :
+* Both parties (for example ISP) get peer service from each other
+* They accept traffic from the other ISP only for their customers but do not carry traffic to the rest of the internet for each other
+
+#####Border Gateway Protocol (BGP)
+BGP is the protocol that computes interdomain routes in the Internet
+Border routers announce BGP routes to each other
+
+Policy :
+1. Border routers of ISP announce paths only to other parties who may use those paths
+2. Border routers of ISP select the best path of the ones they hear in any, non-shortest way
+
+![bgp.png](./img/bgp.png)
+
+
+
+
+
+##Chapter 5 : Transport Layer
 
 
 ##Acronyms
@@ -772,3 +940,12 @@ DHCP | Dynamic Host Configuration Protocol |
 MF | More Fragments | Bit in IP header, 1 if more fragments are following
 <a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
 <a name="acronym_nat2" href="#acronym_nat1">NAT</a> | Network Address Translation |
+RIP | Routing Information Protocol |
+DV | Distance Vector (protocol) |
+LSP | Link State Packet |
+IS-IS | Intermediate System to Intermediate System |
+OSPF | Open Shortest Path First |
+ECMP | Equal-Cost Multi-Path routing | Shortest paths with more than one path
+ISP | Internet Service Provider
+IXP | Internet Exchange Point | Permet aux différents ISP d'échanger du trafic Internet entre leurs réseaux
+BGP | Border Gateway Protocol | Protocol to compute interdomain routes in the Internet
