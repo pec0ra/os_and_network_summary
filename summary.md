@@ -39,22 +39,23 @@ Protocol stack example :
 
 #####OSI "7 layer" Reference Model
 
-| | Layer | Description |
-| -- | :-- | :---------- |
-|7 | Application | Provides functions needed by users|
-|6 | Presentation | Converts different data representations|
-|5| Session | Manages task dialogs
-|4| Transport | Provides end-to-end delivery
-|3| Network | Sends packets over multiple links
-|2| Data link | Sends frames of information
-|1| Physical | Sends bits as signals
+ | Layer | Description |
+-- | :-- | :---------- |
+7 | Application | Provides functions needed by users|
+6 | Presentation | Converts different data representations|
+5| Session | Manages task dialogs
+4| Transport | Provides end-to-end delivery
+3| Network | Sends packets over multiple links
+2| Data link | Sends frames of information
+1| Physical | Sends bits as signals
+
 
 #####Four layer model
 
 Based on experience
 
  | Layer | Description |
--- |:-- | :---------- |
+-- | :-- | :---------- |
 7 |Application | Programs that use network service
 4 |Transport | Provides end-to-end data delivery
 3 |Internet | Send packets over multiple networks
@@ -67,7 +68,7 @@ Based on experience
 #####Layer-based names
 
 Layer | Unit of Data
-:--|:--
+:-- | :--
 Application | Message
 Transport | Segment
 Network | Packet
@@ -89,7 +90,7 @@ Devices in the network :
 ###Socket API
 
 Primitive | Meaning
-:--|:--
+:-- | :--
 SOCKET | Create a new communication endpoint
 BIND | Associate a local address with a socket
 LISTEN | Announce willingness to accept connections; give queue size
