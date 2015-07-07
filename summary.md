@@ -123,7 +123,7 @@ $$
 L = T + D = \frac{M}{R} + \frac{L}{\frac{2}{3}C}
 $$
 
-#####Bandwidth-delay product
+#####<a name="bd" href="#bd2">Bandwidth-delay product</a>
 
 The amount of data "in flight"
 $$BD = R\cdot D$$
@@ -907,45 +907,221 @@ Policy :
 ##Chapter 5 : Transport Layer
 
 
+Builds on the network layer to deliver data across networks for applications with the desired reliability or quality.
+
+Services :
+
+ | Unreliable | Reliable
+:-- |:--|:--
+**Message**| Datagrams (UDP)|
+**Bytestream**| | Streams (TCP)
+TCP is full-featured, UDP is a glorified packet
+
+TCP (streams)|UDP (Datagrams)
+:--|:--
+Connections | Datagrams
+Bytes are delivered once, reliably, and in order | Messages may be lost, reordered and duplicated
+Arbitrary length content | Limited message size
+Flow control matches sender to receiver | Can send regardless of receiver state
+Congestion control matches sender to network | Can send regardless of network state
+
+###Socket API
+* Abstraction to use the network
+* Part of all major OSes and languages
+* Supports both Internet transport services (streams and datagrams)
+* Sockets let apps attach to the local network at different ports
+
+API :
+
+Primitive | Meaning
+:-- | :--
+SOCKET | Create a new communication endpoint
+BIND | Associate a local address (port) with a socket
+LISTEN | Announce willingness to accept connections
+ACCEPT | Passively establish an incoming connection
+CONNECT | Actively attempt to establish a connection
+SEND(TO) | Send some data over the socket
+RECEIVE(FROM) | Receive some data over the socket
+CLOSE | Release the socket
+
+####Ports
+* Application identified by tuple : IP address, Protocol, Port
+* Ports are 16-bit integers
+* <1024 requires administrative privileges
+* Servers often bind to well-known ports, clients often assigned ephemeral ports chosen by OS
+
+Some well-known ports :
+
+Port | Protocol
+:-- | :--
+20,21 | FTP
+22 | SSH
+25 | SMTP
+80 | HTTP
+110 | POP-3
+143 | IMAP
+443 | HTTPS
+543 | RTSP
+631 | IPP
+
+
+###User Datagram Protocol (UDP)
+
+Used by apps that don't want reliability or bytestreams (es : VOIP, DNS, RPC, DHCP)
+
+
+![udp.png](./img/udp.png)
+
+#####UDP Header
+* Uses ports to identify application processes
+* Datagram length up to 64K
+* Checksum (16 bits for reliability)
+
+![udp2.png](./img/udp2.png)
+
+###Transmission Control Protocol (TCP)
+
+####Connection establishment
+
+Both sender and receiver must be ready before we start the transfer of data. Need to agree on a set of parameters
+
+#####Three-Way Handshake
+
+Each side probes the other with a fresh Initial Sequence Number (ISN)
+
+Three steps to establish a connection :
+1. Client sends SYN(x) (SYNchronize)
+2. Server replies with SYN(y)ACK(x+1)
+3. Client replies with ACK(y+1)
+4. SYNs are retransmitted if lost
+
+
+![handshake.png](./img/handshake.png)
+
+![handshake_state.png](./img/handshake_state.png)
+
+
+Two steps to close a connection :
+1. Active sends FIN(x), passive ACKs
+2. Passive sends FIN(y), active ACKs
+3. FINs are retransmitted if lost
+
+![tcp_release.png](./img/tcp_release.png)
+
+![tcp_release_state.png](./img/tcp_release_state.png)
+
+
+####Sliding Windows
+
+* Better than Stop-and-Wait (one message + ARQ)
+* Allows W packets to be outstanding
+* Needs W=2<a href="#bd" name="bd2">BD</a> to fill network path
+
+#####Sender
+Sender buffers up to W segments until they are acknowledged
+Sends while LFS (Last Frame Sent) - LAR (Last ACK Rec'd) <= W
+
+
+![sliding_window.png](./img/sliding_window.png)
+
+#####Receiver
+
+**Go-Back-N**
+* Receiver keeps only a single packet buffer for the next segment (state variable LAS = Last Ack Sent)
+* Discard if seq. number != LAS+1
+
+**Selective Repeat**
+* Receiver buffers W segments, keeps state variable LAS (Last Ack Sent)
+* On receive :
+    1. Buffer segments [LAS+1, LAS+W]
+    2. Pass up to app in-order segments from LAS+1 and update LAS
+    3. Send ACK for LAS
+
+#####Sequence numbers
+Needs 2W seq. numbers for Selective Repeat and W+1 for Go-Back-N
+
+#####Flow Control
+* Receiver tells the sender the available buffer space WIN (Flow Control Window)
+* Sender uses the lower of the sliding window and flow control window (WIN) as the effective window size
+
+![flow_control.png](./img/flow_control.png)
+
+####Timeout problem
+* Timeout must be variable on the Internet because RTT (Round Trip Time) varies.
+* Adaptive timeout keeps a smoothed estimate of the RTT and its variance :
+$$$SRTT_{N+1} = 0.9\cdot SRTT_N + 0.1\cdot RTT_{N+1}$$$
+$$$Svar_{N+1} = 0.9\cdot Svar_N + 0.1\cdot \left|RTT_{N+1} - SRTT_{N+1}\right|$$$
+* Set timeout to an multiple of estimates :
+TCP Timeout = $$$SRTT_N + 4\cdot SVAR_N$$$
+
+####Reliable Bytestream
+* Messages boundaries are not preserved from send() to recv() but are reliable and ordered.
+
+![reliable_bytestream.png](./img/reliable_bytestream.png)
+
+* Bidirectional data transfer
+
+####TCP Header
+
+![tcp_header.png](./img/tcp_header.png)
+
+
+
+##Chapter 6 : Congestion Control
+
+
+
+
+
+
+
+
+
+
+
 ##Acronyms
 Acronym | Meaning | Description
 :------ | :------ | :----------
-Pan | Personal Area Network | ex : Bluetooth
-Lan | Local Area Network | ex : WiFi, Ethernet
-Man | Metropolitan Area Network | ex : Cable, DSL
-Wan | Wide Area Network | Large ISP
-<a name="nrz_acronym1" href="#nrz_acronym2">NRZ</a> | Non Return to Zero |
-<a name="snr_acronym2" href="snr_acronym1">SNR</a> | Signal to Noise Ratio | S/N
-<a name="acronym_crc2" href="#acronym_crc1">CRC</a> | Cyclic redundancy check |
-<a name="acronym_ldpc2" href="#acronym_ldpc1">LDPC</a> | Low Density Parity Check | State of the art today to correct errors in messages
+AP | Access Point | See 802.11
+ARP | Address Resolution Protocol |
 <a name="acronym_arq2" href="#acronym_arq1">ARQ</a> | Automatic Repeat reQuest |
-<a name="acronym_tdm2" href="#acronym_tdm1">TDM</a> | Time Division Multiplexing |
-<a name="acronym_fdm2" href="#acronym_fdm1">FDM</a> | Frequency Division Multiplexing |
-<a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control | 
+<a name="acronym_beb2" href="#acronym_beb1">BEB</a> | Binary Exponential Backoff |
+BGP | Border Gateway Protocol | Protocol to compute interdomain routes in the Internet
+<a name="acronym_crc2" href="#acronym_crc1">CRC</a> | Cyclic redundancy check |
 <a name="acronym_csma2" href="#acronym_csma1">CSMA</a> | Carrier Sense Multiple Access |
 <a name="acronym_csmacd2" href="#acronym_csmacd1">CSMA/CD</a> | Carrier Sense Multiple Access with Collision Detection |
-<a name="acronym_beb2" href="#acronym_beb1">BEB</a> | Binary Exponential Backoff |
-<a name="acronym_maca2" href="#acronym_maca1">MACA</a> | Multiple Access with Collision Avoidance |
-<a name="acronym_rts2" href="#acronym_rts1">RTS</a> | Request To Send |
 <a name="acronym_cts2" href="#acronym_cts1">CTS</a> | Clear To Send |
-AP | Access Point | See 802.11
-<a href="#acronym_mpls1" name="acronym_mpls2">MPLS</a> | Multi-Protocol Label Switching |
-VC | Virtual Circuit |
-TTL | Time To Live |
-QOS | Quality Of Service |
-IANA | Internet Assigned Numbers Authority | Allocates public IP addresses (delegates to regional RIRs)
-ARP | Address Resolution Protocol |
 DHCP | Dynamic Host Configuration Protocol |
-<a name="acronym_mtu2" href="#acronym_mtu1">MTU</a> | Maximum Transmission Unit |
-MF | More Fragments | Bit in IP header, 1 if more fragments are following
-<a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
-<a name="acronym_nat2" href="#acronym_nat1">NAT</a> | Network Address Translation |
-RIP | Routing Information Protocol |
 DV | Distance Vector (protocol) |
-LSP | Link State Packet |
-IS-IS | Intermediate System to Intermediate System |
-OSPF | Open Shortest Path First |
 ECMP | Equal-Cost Multi-Path routing | Shortest paths with more than one path
+<a name="acronym_fdm2" href="#acronym_fdm1">FDM</a> | Frequency Division Multiplexing |
+IANA | Internet Assigned Numbers Authority | Allocates public IP addresses (delegates to regional RIRs)
+<a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
+ISN | Initial Sequence Number |
 ISP | Internet Service Provider
+IS-IS | Intermediate System to Intermediate System |
 IXP | Internet Exchange Point | Permet aux différents ISP d'échanger du trafic Internet entre leurs réseaux
-BGP | Border Gateway Protocol | Protocol to compute interdomain routes in the Internet
+Lan | Local Area Network | ex : WiFi, Ethernet
+<a name="acronym_ldpc2" href="#acronym_ldpc1">LDPC</a> | Low Density Parity Check | State of the art today to correct errors in messages
+LSP | Link State Packet |
+<a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control | 
+<a name="acronym_maca2" href="#acronym_maca1">MACA</a> | Multiple Access with Collision Avoidance |
+Man | Metropolitan Area Network | ex : Cable, DSL
+MF | More Fragments | Bit in IP header, 1 if more fragments are following
+<a href="#acronym_mpls1" name="acronym_mpls2">MPLS</a> | Multi-Protocol Label Switching |
+<a name="acronym_mtu2" href="#acronym_mtu1">MTU</a> | Maximum Transmission Unit |
+<a name="acronym_nat2" href="#acronym_nat1">NAT</a> | Network Address Translation |
+<a name="nrz_acronym1" href="#nrz_acronym2">NRZ</a> | Non Return to Zero |
+OSPF | Open Shortest Path First |
+Pan | Personal Area Network | ex : Bluetooth
+QOS | Quality Of Service |
+RIP | Routing Information Protocol |
+<a name="acronym_rts2" href="#acronym_rts1">RTS</a> | Request To Send |
+RTT | Round Trip TIme |
+<a name="snr_acronym2" href="#snr_acronym1">SNR</a> | Signal to Noise Ratio | S/N
+TCP | Transmission Control Protocol |
+<a name="acronym_tdm2" href="#acronym_tdm1">TDM</a> | Time Division Multiplexing |
+TTL | Time To Live |
+UDP | User Datagram Protocol |
+VC | Virtual Circuit |
+Wan | Wide Area Network | Large ISP
