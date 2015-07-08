@@ -1013,12 +1013,21 @@
 <!--span class="number">
 127
 </span-->
+<ul>
+<li><span class="title">
+<a href="#osi-session-/-presentation-layers" title="OSI Session / Presentation layers">OSI Session / Presentation layers</a>
+</span>
+<!--span class="number">
+128
+</span-->
+</li>
+</ul>
 </li>
 <li><span class="title">
 <a href="#acronyms" title="Acronyms">Acronyms</a>
 </span>
 <!--span class="number">
-128
+129
 </span-->
 </li>
 </ul>
@@ -1070,13 +1079,11 @@
 <td>7</td>
 <td style="text-align:left">Application</td>
 <td style="text-align:left">Provides functions needed by users</td>
-<td></td>
 </tr>
 <tr>
 <td>6</td>
 <td style="text-align:left">Presentation</td>
 <td style="text-align:left">Converts different data representations</td>
-<td></td>
 </tr>
 <tr>
 <td>5</td>
@@ -1684,7 +1691,7 @@ L = T + D = \frac{M}{R} + \frac{L}{\frac{2}{3}C}</script><p></p></li></ul><h5 id
 <li>MD portion of AIMD</li></ul><p><strong>Fast retransmit :</strong></p><ul>
 <li>ACKs carry the (in-order) seq. number of the last received packet =&gt; stays the same when a packet is lost</li><li>Duplicate ACKs tells : Some data did arrive but it was not the next segment (next segment may be lost)</li><li>Treat three duplicate ACKs as a loss =&gt; retransmit next expected segment</li></ul><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/fast_retransmit.png" alt="fast_retransmit.png"></p><ul>
 <li>Fast retransmit can repair single segment loss before a timeout</li></ul><p><strong>Fast recovery : </strong></p><ul>
-<li>First fast retransmit and MD cwnd</li><li>Then pretend further duplicate ACKs are the expected ACKs</li></ul><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/fast_recovery.png" alt="fast_recovery.png"></p><p><strong>TCP Reno combines Slow-Start, fast retransmit and fast recovery with MD of <span><span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-46-Frame" role="textbox" aria-readonly="true"><nobr><span class="math" id="MathJax-Span-450" style="width: 0.95em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.765em; height: 0px; font-size: 122%;"><span style="position: absolute; clip: rect(1.077em 1000em 2.686em -0.492em); top: -2.131em; left: 0em;"><span class="mrow" id="MathJax-Span-451"><span class="mfrac" id="MathJax-Span-452"><span style="display: inline-block; position: relative; width: 0.503em; height: 0px; margin-right: 0.12em; margin-left: 0.12em;"><span style="position: absolute; clip: rect(1.598em 1000em 2.404em -0.413em); top: -2.653em; left: 50%; margin-left: -0.191em;"><span class="mn" id="MathJax-Span-453" style="font-size: 70.7%; font-family: STIXGeneral;">1</span><span style="display: inline-block; width: 0px; height: 2.24em;"></span></span><span style="position: absolute; clip: rect(1.598em 1000em 2.404em -0.471em); top: -1.85em; left: 50%; margin-left: -0.191em;"><span class="mn" id="MathJax-Span-454" style="font-size: 70.7%; font-family: STIXGeneral;">2</span><span style="display: inline-block; width: 0px; height: 2.24em;"></span></span><span style="position: absolute; clip: rect(0.861em 1000em 1.257em -0.492em); top: -1.313em; left: 0em;"><span style="border-left-width: 0.503em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0em;"></span><span style="display: inline-block; width: 0px; height: 1.093em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.131em;"></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.696em; vertical-align: -0.543em;"></span></span></nobr></span><script type="math/tex" id="MathJax-Element-46">\frac{1}{2}</script></span></strong></p><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/tcp_reno.png" alt="tcp_reno.png"></p><h4 id="explicit-congestion-notification-(ecn)"><a name="explicit-congestion-notification-(ecn)" href="#explicit-congestion-notification-(ecn)"></a>Explicit Congestion Notification (ECN)</h4><ul>
+<li>First fast retransmit and MD cwnd</li><li>Then pretend further duplicate ACKs are the expected ACKs</li></ul><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/fast_recovery.png" alt="fast_recovery.png"></p><p><strong>TCP Reno combines Slow-Start, fast retransmit and fast recovery with MD of <span><span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-42-Frame" role="textbox" aria-readonly="true"><nobr><span class="math" id="MathJax-Span-430" style="width: 0.95em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.765em; height: 0px; font-size: 122%;"><span style="position: absolute; clip: rect(1.077em 1000em 2.686em -0.492em); top: -2.131em; left: 0em;"><span class="mrow" id="MathJax-Span-431"><span class="mfrac" id="MathJax-Span-432"><span style="display: inline-block; position: relative; width: 0.503em; height: 0px; margin-right: 0.12em; margin-left: 0.12em;"><span style="position: absolute; clip: rect(1.598em 1000em 2.404em -0.413em); top: -2.653em; left: 50%; margin-left: -0.191em;"><span class="mn" id="MathJax-Span-433" style="font-size: 70.7%; font-family: STIXGeneral;">1</span><span style="display: inline-block; width: 0px; height: 2.24em;"></span></span><span style="position: absolute; clip: rect(1.598em 1000em 2.404em -0.471em); top: -1.85em; left: 50%; margin-left: -0.191em;"><span class="mn" id="MathJax-Span-434" style="font-size: 70.7%; font-family: STIXGeneral;">2</span><span style="display: inline-block; width: 0px; height: 2.24em;"></span></span><span style="position: absolute; clip: rect(0.861em 1000em 1.257em -0.492em); top: -1.313em; left: 0em;"><span style="border-left-width: 0.503em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.25px; vertical-align: 0em;"></span><span style="display: inline-block; width: 0px; height: 1.093em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.131em;"></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.696em; vertical-align: -0.543em;"></span></span></nobr></span><script type="math/tex" id="MathJax-Element-42">\frac{1}{2}</script></span></strong></p><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/tcp_reno.png" alt="tcp_reno.png"></p><h4 id="explicit-congestion-notification-(ecn)"><a name="explicit-congestion-notification-(ecn)" href="#explicit-congestion-notification-(ecn)"></a>Explicit Congestion Notification (ECN)</h4><ul>
 <li>Lets routers help hosts to avoid congestion</li><li>Routers and hosts must be upgraded</li></ul><h5 id="congestion-avoidance-vs-control"><a name="congestion-avoidance-vs-control" href="#congestion-avoidance-vs-control"></a>Congestion avoidance vs control</h5><ul>
 <li>Classic TCP drives the network into congestion and then recovers</li><li>Would be better to avoid the congestion altogether</li></ul><h5 id="feedback-signals"><a name="feedback-signals" href="#feedback-signals"></a>Feedback signals</h5><table>
 <thead>
@@ -1712,7 +1719,53 @@ L = T + D = \frac{M}{R} + \frac{L}{\frac{2}{3}C}</script><p></p></li></ul><h5 id
 </tr>
 </tbody>
 </table><h5 id="how-it-works"><a name="how-it-works" href="#how-it-works"></a>How it works</h5><ul>
-<li>Router detects the onset of congestion via its queue and marks affected packets (IP header)</li><li>Receiver treats these packets as loss and informs sender</li></ul><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/ecn.png" alt="ecn.png"></p><h2 id="chapter-7-:-application-layer"><a name="chapter-7-:-application-layer" href="#chapter-7-:-application-layer"></a>Chapter 7 : Application Layer</h2><h2 id="acronyms"><a name="acronyms" href="#acronyms"></a>Acronyms</h2><table>
+<li>Router detects the onset of congestion via its queue and marks affected packets (IP header)</li><li>Receiver treats these packets as loss and informs sender</li></ul><p><img src="file:///home/basile/Studium/Second%20year/OS%20and%20Networks/Summary/img/ecn.png" alt="ecn.png"></p><h2 id="chapter-7-:-application-layer"><a name="chapter-7-:-application-layer" href="#chapter-7-:-application-layer"></a>Chapter 7 : Application Layer</h2><ul>
+<li>Builds distributed “network services” (DNS, Web) on transport services</li><li>Application layer protocols are often part of an “app” but don’t need a GUI</li><li>Application layer messages are often split over multiple packets or aggregated in a packet</li><li>Application communication needs vary widely with app; must build on Transport services</li></ul><h3 id="osi-session-/-presentation-layers"><a name="osi-session-/-presentation-layers" href="#osi-session-/-presentation-layers"></a>OSI Session / Presentation layers</h3><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:left">Layer</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td style="text-align:left"><strong>Application</strong></td>
+<td style="text-align:left">Provides functions needed by users</td>
+</tr>
+<tr>
+<td>6</td>
+<td style="text-align:left"><strong>Presentation</strong></td>
+<td style="text-align:left">Converts different data representations</td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align:left">Session</td>
+<td style="text-align:left">Manages task dialogs</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:left">Transport</td>
+<td style="text-align:left">Provides end-to-end delivery</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:left">Network</td>
+<td style="text-align:left">Sends packets over multiple links</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:left">Data link</td>
+<td style="text-align:left">Sends frames of information</td>
+</tr>
+<tr>
+<td>1</td>
+<td style="text-align:left">Physical</td>
+<td style="text-align:left">Sends bits as signals</td>
+</tr>
+</tbody>
+</table><h2 id="acronyms"><a name="acronyms" href="#acronyms"></a>Acronyms</h2><table>
 <thead>
 <tr>
 <th style="text-align:left">Acronym</th>

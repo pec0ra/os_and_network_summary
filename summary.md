@@ -39,10 +39,10 @@ Protocol stack example :
 
 #####OSI "7 layer" Reference Model
 
- | Layer | Description |
--- | :-- | :---------- |
-7 | Application | Provides functions needed by users|
-6 | Presentation | Converts different data representations|
+ | Layer | Description
+-- | :-- | :----------
+7 | Application | Provides functions needed by users
+6 | Presentation | Converts different data representations
 5| Session | Manages task dialogs
 4| Transport | Provides end-to-end delivery
 3| Network | Sends packets over multiple links
@@ -54,8 +54,8 @@ Protocol stack example :
 
 Based on experience
 
- | Layer | Description |
--- | :-- | :---------- |
+ | Layer | Description
+-- | :-- | :----------
 7 |Application | Programs that use network service
 4 |Transport | Provides end-to-end data delivery
 3 |Internet | Send packets over multiple networks
@@ -1196,7 +1196,22 @@ Packet delay | Compound TCP (Windows) | Hear about congestion early / Need to in
 
 ##Chapter 7 : Application Layer
 
+* Builds distributed "network services" (DNS, Web) on transport services
+* Application layer protocols are often part of an "app" but don't need a GUI
+* Application layer messages are often split over multiple packets or aggregated in a packet
+* Application communication needs vary widely with app; must build on Transport services
 
+###OSI Session / Presentation layers
+
+ | Layer | Description
+-- | :-- | :----------
+7 | **Application** | Provides functions needed by users
+6 | **Presentation** | Converts different data representations
+5| Session | Manages task dialogs
+4| Transport | Provides end-to-end delivery
+3| Network | Sends packets over multiple links
+2| Data link | Sends frames of information
+1| Physical | Sends bits as signals
 
 
 
