@@ -1122,7 +1122,7 @@ Feedback signals :
 * Router indication
 
 #####TCP Tahoe/Reno
-Fix timeouts and introduce a congestion window over the sliding window to limit queues/loss
+Fix timeouts and introduce a congestion window (cwnd) over the sliding window to limit queues/loss
 
 ####TCP ACK clocking
 The self-clocking behavior of sliding windows
@@ -1141,9 +1141,60 @@ Implementation (TCP Tahoe) :
 * Switching threshold initially $$$\infty$$$, $$$\frac{cwnd}{2}$$$ after loss
 
 
+![slow_start.png](./img/slow_start.png)
+
+####TCP Fast Retransmig / Fast Recovery
+* MD portion of AIMD
+
+**Fast retransmit :**
+* ACKs carry the (in-order) seq. number of the last received packet => stays the same when a packet is lost
+* Duplicate ACKs tells : Some data did arrive but it was not the next segment (next segment may be lost)
+* Treat three duplicate ACKs as a loss => retransmit next expected segment
+
+![fast_retransmit.png](./img/fast_retransmit.png)
+
+
+* Fast retransmit can repair single segment loss before a timeout
+
+**Fast recovery : **
+* First fast retransmit and MD cwnd
+* Then pretend further duplicate ACKs are the expected ACKs
+
+
+![fast_recovery.png](./img/fast_recovery.png)
+
+**TCP Reno combines Slow-Start, fast retransmit and fast recovery with MD of $$$\frac{1}{2}$$$**
+
+![tcp_reno.png](./img/tcp_reno.png)
 
 
 
+
+####Explicit Congestion Notification (ECN)
+* Lets routers help hosts to avoid congestion
+* Routers and hosts must be upgraded
+
+#####Congestion avoidance vs control
+* Classic TCP drives the network into congestion and then recovers
+* Would be better to avoid the congestion altogether
+
+#####Feedback signals
+
+Signal | Example protocol | Pros / Cons
+:-- | :-- | :--
+Packet loss | Classic TCP, Cubic TCP (linux) | Hard to get wrong / Hear about congestion late
+Packet delay | Compound TCP (Windows) | Hear about congestion early / Need to infer congestion
+**Router indication** | TCPs with explicit congestion notification | Hear about congestion early / Require router support
+
+#####How it works
+
+* Router detects the onset of congestion via its queue and marks affected packets (IP header)
+* Receiver treats these packets as loss and informs sender
+
+![ecn.png](./img/ecn.png)
+
+
+##Chapter 7 : Application Layer
 
 
 
@@ -1169,6 +1220,7 @@ cwnd | Congestion Window |
 DHCP | Dynamic Host Configuration Protocol |
 DV | Distance Vector (protocol) |
 ECMP | Equal-Cost Multi-Path routing | Shortest paths with more than one path
+ECN | Explicit Congestion Notification |
 <a name="acronym_fdm2" href="#acronym_fdm1">FDM</a> | Frequency Division Multiplexing |
 IANA | Internet Assigned Numbers Authority | Allocates public IP addresses (delegates to regional RIRs)
 <a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
