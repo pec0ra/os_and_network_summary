@@ -948,7 +948,7 @@ CLOSE | Release the socket
 ####Ports
 * Application identified by tuple : IP address, Protocol, Port
 * Ports are 16-bit integers
-* <1024 requires administrative privileges
+* Less than 1024 requires administrative privileges
 * Servers often bind to well-known ports, clients often assigned ephemeral ports chosen by OS
 
 Some well-known ports :
@@ -1205,13 +1205,231 @@ Packet delay | Compound TCP (Windows) | Hear about congestion early / Need to in
 
  | Layer | Description
 -- | :-- | :----------
-7 | **Application** | Provides functions needed by users
+7 | Application | Provides functions needed by users
 6 | **Presentation** | Converts different data representations
-5| Session | Manages task dialogs
+5| **Session** | Manages task dialogs
 4| Transport | Provides end-to-end delivery
 3| Network | Sends packets over multiple links
 2| Data link | Sends frames of information
 1| Physical | Sends bits as signals
+
+Considered part of the application layer
+
+####Session
+* A session is a serie of related network interactions in support of an application task
+* Ex : Web page fetches multiple images, Skype call involves audio, video, chat
+
+####Presentation
+* Apps need to identify the type of content and encode it for transfer
+* Ex : MIME types (image/jpeg)
+Transfer encodings (gzip)
+* Application headers are often either simple and readable or packed for efficiency
+
+
+###Domain Name System (DNS)
+* A naming service to map between host names and their IP addresses (and more)
+
+####Distributed namespace
+> **Name :**
+> Higher-level (user-understandable) resource identifiers
+
+> **Addresses :**
+> Lower-level resource locators
+
+> **Resolution (or lookup):**
+> Mapping a name to an address
+
+Multiple levels (ex : full name -> email -> IP address -> Ethernet address)
+
+####Before DNS
+* Directory was a file hosts.txt regularly retrieved for all hosts from a central machine at the NIC (Network Information Center)
+* Names were initially flat and became hierarchical ~1985
+* Neither manageable nor efficient
+
+####Approach
+* Distributed directory based on hierarchical namespace
+* Automated protocol to tie pieces together
+
+####DNS Namespace
+* Hierarchical, starting from . (typically omitted)
+
+#####Top-Level Domains (TLD)
+* Run by ICANN (Internet Corp. for Assigned Names and Numbers)
+* 22+ generic TLDs (initially .com, .edu, .gov, .mil, .org, .net; now .info, .museum...); They all have different policies
+* ~250 country code TLDs (two letters, ex : .ch; plus international characters since 2010)
+
+#####DNS Zones
+A zone is a contiguous portion of the namespace
+
+![dns_zone.png](./img/dns_zone.png)
+
+Each zone has a nameserver to contact for information about it
+
+**DNS Resource Records**
+A zone is comprised of DNS resource records that provide information about its domain names
+
+Type | Meaning
+:-- | :--
+SOA | Start of authority, has key zone parameters
+A | IPv4 address of a host
+AAAA (quad A)| IPv6 of a host
+CNAME | Canonical name for an alias
+MX | Mail exchanger for the domain
+NS | Nameserver of domain or delegated subdomain
+
+####DNS Resolution
+* DNS protocol lets a host resolve any host name (domain) to IP address
+* If unknown, starts with the root nameserver and work down zones
+
+![dns_resolution.png](./img/dns_resolution.png)
+
+#####Iterative vs Recursive queries
+* Recursive query : Nameserver completes resolution and returns the final answer
+* Iterative query : Nameserver returns the answer or who to contact next for the answer
+
+#####Caching
+Cache query/responses to answer future queries
+
+#####Local nameserver
+* Typically run by IT (enterprise, ISP); Can be alternatives like Google public DNS
+* Clients need to be able to contact their local nameservers (typically configured via DHCP)
+
+#####Root Nameservers
+* Root (dot) is served by 13 server names (a.root-servers.net to m.root-servers.net)
+* \>250 distributed server instances (reached by IP anycast : Multiple locations advertise same IP)
+
+####DNS Protocol
+* Built on UDP messages, port 53
+* ARQ for reliability
+* Messages linked by a 16-bit ID field
+* Service reliability via replicas (multiple nameservers for domain, return list and client use one answer)
+* Security is a major issue (DNSSEC (DNS Security Extensions) are being deployed)
+
+
+###HyperText Transfer Protocol (HTTP)
+* HTTP is a request/response protocol for fetching web resources
+* Runs on TCP, typically port 80
+* Part of browser/server app
+
+**Steps :**
+1. Resolve the server IP address (DNS)
+2. Set up TCP connection to the server
+3. Send HTTP request for the page
+4. Await HTTP response for the page
+5. Execute / fetch embedded resources / render
+6. Clean up any idle TCP connection
+
+**Commands used in the request :**
+
+Method | Description
+:-- | :--
+GET | Read a web page
+HEAD | Read a web page's header
+POST | Append to a Web page
+PUT | Store a Web page
+DELETE | Remove the Web page
+TRACE | Echo the incoming request
+CONNECT | Connect through a proxy
+OPTIONS | Query options for a page
+
+**Response codes**
+
+Code | Meaning | Example
+:-- | :-- | :--
+1xx | Information | 100 = server agrees to handle client's request
+2xx | Success | 200 = request succeeded; 204 = no content present
+3xx | Redirection |
+4xx | Client error |
+5xx | Server error |
+
+####HTTP performance
+
+#####Page Load Time (PLT)
+* Key measure of Web performance
+* From click until user sees page
+* Depends on :
+  * Structure of page / content
+  * HTTP (and TCP) protocol
+  * Network RTT and bandwidth
+
+#####Early performance
+* HTTP/1.0 uses one TCP connection to fetch one Web resource
+* Easy to build
+* Poor PLT
+    * Sequential request/response, even when to different servers
+    * Multiple TCP connection setups to same server
+    * Multiple TCP slow-start phases
+
+#####Optimizations
+* Reduce content size (smaller, compression)
+* Change HTTP to make better use of bandwidth
+* Caching / Proxies
+* Move content closer to client
+
+**Parallel connections**
+Browser runs multiple HTTP instances in parrallel
+
+**Persistent connections**
+Make 1 TCP connection to 1 server, use it for multiple HTTP requests
+
+**Web caching**
+
+![web_caching.png](./img/web_caching.png)
+
+**Web proxies**
+Place intermediary between pool of clients and external web servers (clients contact proxy, proxy contacts server)
+Clients benefit from larger, shared cache and security checking
+
+#####Content Delivery Networks (CDN)
+* Efficient distribution of popular content; faster delivery for clients
+
+![cdn.png](./img/cdn.png)
+
+* Place Replicas across the Internet for use by all nearby clients
+* DNS resolution of site gives answer depending on client
+
+![cdn_dns.png](./img/cdn_dns.png)
+
+* Some ISP also have replicas of sites to reduce bandwidth usage
+
+
+#####SPDY (speedy)
+Improvements for HTTP/2
+* Multiplexed (parallel) HTTP requests on one TCP connection
+* Client priorities for parallel requests
+* Compressed HTTP headers
+* Server push of resources
+
+#####mod_pagespeed
+Have server rewrite (compile) pages to help them load faster
+Examples :
+* Minify javascript
+* Flatten multi-level CSS files
+* Resize images for client
+
+###Peer-to-Peer content delivery
+* Gaol is delivery without dedicated infrastructure or centralized control
+* Communication must be peer-to-peer and self-organizing, not client-server
+* Peer can send content to all other peers using a distribution tree (done with replicas over time)
+* Peer play two roles :
+    1. Download to help themselves
+    2. Upload to help others
+* Cooperation (I'll upload for you if you upload for me)
+
+#####Distributed Hash Tables (DHT)
+Peer use it to learn where to get content
+* Fully decentralized, efficient algorithms for a distributed index
+* Index is spread across all peers
+* Index lists peers to contact for content
+* Any peer can lookup the index
+
+####BitTorrent Protocol
+Steps to download a torrent
+1. Start with torrent description
+2. Contact tracker to join and gest list of peers or use DHT index for peers
+3. Trade pieces with different peers
+4. Favor peers that upload to you rapidly, choke peers that don't by slowing your upload to them
+
 
 
 
@@ -1227,17 +1445,22 @@ ARP | Address Resolution Protocol |
 <a name="acronym_arq2" href="#acronym_arq1">ARQ</a> | Automatic Repeat reQuest |
 <a name="acronym_beb2" href="#acronym_beb1">BEB</a> | Binary Exponential Backoff |
 BGP | Border Gateway Protocol | Protocol to compute interdomain routes in the Internet
+CDN | Content Delivery Network |
 <a name="acronym_crc2" href="#acronym_crc1">CRC</a> | Cyclic redundancy check |
 <a name="acronym_csma2" href="#acronym_csma1">CSMA</a> | Carrier Sense Multiple Access |
 <a name="acronym_csmacd2" href="#acronym_csmacd1">CSMA/CD</a> | Carrier Sense Multiple Access with Collision Detection |
 <a name="acronym_cts2" href="#acronym_cts1">CTS</a> | Clear To Send |
 cwnd | Congestion Window |
 DHCP | Dynamic Host Configuration Protocol |
+DHT | Distributed Hash Table |
+DNS | Domain Name System |
 DV | Distance Vector (protocol) |
 ECMP | Equal-Cost Multi-Path routing | Shortest paths with more than one path
 ECN | Explicit Congestion Notification |
 <a name="acronym_fdm2" href="#acronym_fdm1">FDM</a> | Frequency Division Multiplexing |
+HTTP | HyperText Transfer Protocol |
 IANA | Internet Assigned Numbers Authority | Allocates public IP addresses (delegates to regional RIRs)
+ICANN | Internet Corp. for Assigned Names and Numbers |
 <a name="acronym_icmp2" href="#acronym_icmp1">ICMP</a> | Internet Control Message Protocol |
 ISN | Initial Sequence Number |
 ISP | Internet Service Provider
@@ -1246,16 +1469,18 @@ IXP | Internet Exchange Point | Permet aux différents ISP d'échanger du trafic
 Lan | Local Area Network | ex : WiFi, Ethernet
 <a name="acronym_ldpc2" href="#acronym_ldpc1">LDPC</a> | Low Density Parity Check | State of the art today to correct errors in messages
 LSP | Link State Packet |
-<a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control | 
+<a name="acronym_mac2" href="#acronym_mac1">MAC</a> | Multiple Access Control or Medium Access Control |
 <a name="acronym_maca2" href="#acronym_maca1">MACA</a> | Multiple Access with Collision Avoidance |
 Man | Metropolitan Area Network | ex : Cable, DSL
 MF | More Fragments | Bit in IP header, 1 if more fragments are following
 <a href="#acronym_mpls1" name="acronym_mpls2">MPLS</a> | Multi-Protocol Label Switching |
 <a name="acronym_mtu2" href="#acronym_mtu1">MTU</a> | Maximum Transmission Unit |
 <a name="acronym_nat2" href="#acronym_nat1">NAT</a> | Network Address Translation |
+NIC | Network Information Center |
 <a name="nrz_acronym1" href="#nrz_acronym2">NRZ</a> | Non Return to Zero |
 OSPF | Open Shortest Path First |
 Pan | Personal Area Network | ex : Bluetooth
+PLT | Page Load Time |
 QOS | Quality Of Service |
 RIP | Routing Information Protocol |
 <a name="acronym_rts2" href="#acronym_rts1">RTS</a> | Request To Send |
@@ -1263,6 +1488,7 @@ RTT | Round Trip TIme |
 <a name="snr_acronym2" href="#snr_acronym1">SNR</a> | Signal to Noise Ratio | S/N
 TCP | Transmission Control Protocol |
 <a name="acronym_tdm2" href="#acronym_tdm1">TDM</a> | Time Division Multiplexing |
+TLD | Top-Level Domain |
 TTL | Time To Live |
 UDP | User Datagram Protocol |
 VC | Virtual Circuit |
